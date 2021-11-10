@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link href="/bootstrap.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="col-md-6">
+        <h2>Add Book</h2>
+        <form onsubmit="formSubmit(event, this); return false;">
+          <div class="form-group">
+            <label for="title">Title</label>
+            <input
+              type="text"
+              class="form-control"
+              id="title"
+              placeholder="Enter Title"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="author">Author</label>
+            <input
+              type="text"
+              class="form-control"
+              id="author"
+              placeholder="Enter Author"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="website">Website</label>
+            <input
+              type="text"
+              class="form-control"
+              id="website"
+              placeholder="Enter Website"
+              required
+            />
+          </div>
+          <button type="reset" class="btn btn-danger">Reset</button>
+          <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+      </div>
+      <div class="col-md-6">
+        <table id="books__table" class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Website</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <script src="/jquery.min.js"></script>
+    <script>
+      function formSubmit(event, form) {
+        event.preventDefault();
+        const author = form.elements.author.value;
+        const title = form.elements.title.value;
+        const website = form.elements.website.value;
+        let book = {
+          author,
+          title,
+          website,
+        };
+        form.reset();
+        $.ajax({
+          type: "POST",
+          url: "http://localhost:3400/books/new",
+          data: book,
+          success: function (res) {
+            loadTable();
+          },
+          dataType: "json",
+        });
+      }
+      function loadTable() {
+        $.ajax({
+          type: "GET",
+          url: "http://localhost:3400/books",
+          success: function (books) {
+            let books__table = $('#books__table');
+            let books__tbody = books__table.find('tbody');
+            books__tbody.empty();
+            books.forEach(function({author, title, website, _id}, index){
+              books__tbody.append(`<tr>
+                <td>${index+1}</td>
+                <td>${title}</td>
+                <td>${author}</td>
+                <td>${website}</td>
+                <td>
+                  <button disabled class="btn btn-default">edit</button>
+                  <button class="btn btn-danger" onClick="deleteBook('${_id}')">delete</button>
+                </td>
+              </tr>`)
+            })
+          },
+        });
+      }
+
+      function deleteBook(id){
+        $.ajax({
+          type: "DELETE",
+          url: "http://localhost:3400/books/"+id,
+          success: function (books) {
+            loadTable();
+          },
+        });
+      }
+      loadTable();
+    </script>
+  </body>
+</html>
