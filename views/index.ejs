@@ -9,7 +9,7 @@
   </head>
   <body>
     <div class="container">
-      <div class="col-md-6">
+      <div class="col-md-3">
         <h3>Add Book</h3>
         <form onsubmit="formSubmit(event, this); return false;" autocomplete="off">
           <div class="form-group">
@@ -46,9 +46,9 @@
           <button type="submit" class="btn btn-success">Add Book</button>
         </form>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-9">
         <h3>Book List</h3>
-        <table id="books__table" class="table">
+        <table id="books__table" class="table table-striped table-hover">
           <thead>
             <tr>
               <th>#</th>
@@ -93,6 +93,12 @@
             let books__table = $("#books__table");
             let books__tbody = books__table.find("tbody");
             books__tbody.empty();
+            if(!books || (books && books.length==0)){
+              books__tbody.append(`
+                <tr><td colspan="5" class="text-center">Nothing Found</td></tr>
+              `)
+              return;
+            }
             books.forEach(function ({ author, title, website, _id }, index) {
               books__tbody.append(`
               <tr>
