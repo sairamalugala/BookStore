@@ -10,8 +10,8 @@
   <body>
     <div class="container">
       <div class="col-md-6">
-        <h2>Add Book</h2>
-        <form onsubmit="formSubmit(event, this); return false;">
+        <h3>Add Book</h3>
+        <form onsubmit="formSubmit(event, this); return false;" autocomplete="off">
           <div class="form-group">
             <label for="title">Title</label>
             <input
@@ -43,10 +43,11 @@
             />
           </div>
           <button type="reset" class="btn btn-danger">Reset</button>
-          <button type="submit" class="btn btn-default">Submit</button>
+          <button type="submit" class="btn btn-success">Add Book</button>
         </form>
       </div>
       <div class="col-md-6">
+        <h3>Book List</h3>
         <table id="books__table" class="table">
           <thead>
             <tr>
@@ -57,9 +58,7 @@
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody>
-            
-          </tbody>
+          <tbody></tbody>
         </table>
       </div>
     </div>
@@ -91,34 +90,88 @@
           type: "GET",
           url: "http://localhost:3400/books",
           success: function (books) {
-            let books__table = $('#books__table');
-            let books__tbody = books__table.find('tbody');
+            let books__table = $("#books__table");
+            let books__tbody = books__table.find("tbody");
             books__tbody.empty();
-            books.forEach(function({author, title, website, _id}, index){
-              books__tbody.append(`<tr>
-                <td>${index+1}</td>
-                <td>${title}</td>
-                <td>${author}</td>
-                <td>${website}</td>
+            books.forEach(function ({ author, title, website, _id }, index) {
+              books__tbody.append(`
+              <tr>
+                <td>${index + 1}</td>
+                <td><label class="view_label">${title}</label><input autocomplete="off" class="form-control" name="title" style="display:none;" value="${title}"/></td>
+                <td><label class="view_label">${author}</label><input autocomplete="off" class="form-control" name="author" style="display:none;" value="${author}"/></td>
+                <td><label class="view_label">${website}</label><input autocomplete="off" class="form-control" name="website" style="display:none;" value="${website}"/></td>
                 <td>
-                  <button disabled class="btn btn-default">edit</button>
-                  <button class="btn btn-danger" onClick="deleteBook('${_id}')">delete</button>
+                  <div class="view-content">
+                    <button class="btn btn-default" onclick="editBook(this,'edit')">Edit</button>
+                    <button class="btn btn-danger" onClick="deleteBook('${_id}')">Delete</button>
+                  </div>
+                  <div class="edit-content" style="display:none;">
+                    <button class="btn btn-success" onClick="updateBook('${_id}', this)">Update</button>
+                    <button class="btn btn-defautl" onClick="editBook(this, 'cancel')">Cancel</button>
+                  </div>
                 </td>
-              </tr>`)
-            })
+              </tr>`);
+            });
           },
         });
       }
 
-      function deleteBook(id){
+      function deleteBook(id) {
+        /* API request to delete the book */
         $.ajax({
           type: "DELETE",
-          url: "http://localhost:3400/books/"+id,
+          url: "http://localhost:3400/books/" + id,
           success: function (books) {
             loadTable();
           },
+          error: function () {
+            alert("error while deleting");
+          },
         });
       }
+
+      function updateBook(id, elm) {
+        /*API request to update the book and reload complete books*/
+
+        let book = {};
+        $(elm)
+          .closest("tr")
+          .find("input")
+          .each(function (ind, element) {
+            book[element.getAttribute("name")] = element.value;
+          });
+
+        $.ajax({
+          type: "PUT",
+          url: "http://localhost:3400/books/" + id,
+          data: book,
+          success: function () {
+            loadTable();
+          },
+          error: function () {
+            alert("error while updating");
+          },
+        });
+      }
+
+      function editBook(elm, action) {
+        /* editBook method - for show/hide elements */
+        const closestRow = $(elm).closest("tr");
+        const closestTable = closestRow.closest("table");
+
+        if (action == "edit") {
+          closestTable.find("input").hide();
+          closestRow.find("label, .view-content").hide();
+          closestRow.find("input, .edit-content").show();
+          return;
+        }
+
+        if (action == "cancel") {
+          closestRow.find("label, .view-content").show();
+          closestRow.find("input, .edit-content").hide();
+        }
+      }
+      /* load books on init */
       loadTable();
     </script>
   </body>
